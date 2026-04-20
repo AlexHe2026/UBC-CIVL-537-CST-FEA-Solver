@@ -1,0 +1,13 @@
+services:
+  fea-solver:
+    build: .                # Build the image using the Dockerfile in the current directory
+    container_name: fea-solver
+    ports:
+      - "8501:8501"         # Map port 8501 on your machine to port 8501 in the container
+    volumes:
+      - .:/app              # Mount your local code into the container. This means
+                            # when you edit a file on your laptop, the change is
+                            # immediately visible inside the container — no rebuild needed.
+                            # Streamlit detects the change and reloads the app automatically.
+    environment:
+      - PYTHONUNBUFFERED=1  # Force Python to print output immediately (useful for debugging)

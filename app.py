@@ -1,6 +1,10 @@
 ### app.py (use this until your modules work)
 import streamlit as st
 import plotly.graph_objects as go
+
+from src.mesh import generate_rect_mesh
+from src.elements import compute_D
+
 st.set_page_config(page_title="CST FEA Solver", layout="wide")
 st.title("2D Plane Stress / Plane Strain FEA Solver")
 
@@ -19,6 +23,12 @@ with st.sidebar:
     
 st.info("Configure inputs in the sidebar and click Solve.")
 
+# ──────────────────────────────────────────────
+# Tabs
+# ──────────────────────────────────────────────
+tab1, tab2, tab3 = st.tabs(["🔧 Cantilever Beam", "🕳️ Plate with Hole",
+                             "📊 Convergence & Locking"])
+
 # ══════════════════════════════════════════════
 # Helper: plot mesh
 # ══════════════════════════════════════════════
@@ -32,3 +42,22 @@ def plot_mesh(nodes, elements, title="Mesh Preview"):
     fig.update_layout(yaxis_scaleanchor="x", title=title,
                       height=350, margin=dict(l=0, r=0, t=30, b=0))
     return fig
+
+with tab1:
+    st.subheader("Cantilever Plate — Parabolic Tip Shear")
+
+    col_input, col_mesh = st.columns([1, 2])
+    with col_input:
+        L = st.number_input("Plate Length L (m)", value=1.0, key="cant_L")
+        h = st.number_input("Plate Height h (m)", value=0.25, key="cant_h")
+        P = st.number_input("Tip Load P (N)", value=6000.0, key="cant_P")
+        nx = st.slider("Elements in x", 2, 32, 8, key="cant_nx")
+        ny = st.slider("Elements in y", 2, 16, 4, key="cant_ny")
+        solve_cant = st.button("Solve Cantilever", type="primary")
+
+    # Mesh preview
+    nodes_c, elems_c, tags_c = generate_rect_mesh(L, h, nx, ny)
+    with col_mesh:
+        st.plotly_chart(plot_mesh(nodes_c, elems_c,
+                        f"Mesh: {len(nodes_c)} nodes · {len(elems_c)} elements"),
+                        use_container_width=True)

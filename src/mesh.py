@@ -67,13 +67,14 @@ def generate_rect_mesh(L, h, nx, ny):
     elements = np.array(elements)
 
     # Use modulo math to reliably find the left and right edges
+    # example if nx_node = 5 then 0 % 5 = 0, 5 % 5 = 0 that count for left most edge
+    # and the right most edge would be 4 % 5 = 4, 9 % 5 = 4 equal to node - 1
     boundary_tags = {
         "fixed" : [n for n in range(n_nodes) if n % nx_nodes == 0],
         "loaded" : [n for n in range(n_nodes) if n % nx_nodes == nx_nodes - 1]
     }
 
     return nodes, elements, boundary_tags
-    raise NotImplementedError
 
 
 def generate_plate_with_hole_mesh(W, H, R, n_radial, n_angular):

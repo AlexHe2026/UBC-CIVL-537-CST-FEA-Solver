@@ -1,5 +1,6 @@
 ### app.py (use this until your modules work)
 import streamlit as st
+import plotly.graph_objects as go
 st.set_page_config(page_title="CST FEA Solver", layout="wide")
 st.title("2D Plane Stress / Plane Strain FEA Solver")
 
@@ -17,3 +18,17 @@ with st.sidebar:
     solve = st.button("Solve", type="primary")
     
 st.info("Configure inputs in the sidebar and click Solve.")
+
+# ══════════════════════════════════════════════
+# Helper: plot mesh
+# ══════════════════════════════════════════════
+def plot_mesh(nodes, elements, title="Mesh Preview"):
+    fig = go.Figure()
+    for tri in elements:
+        pts = nodes[list(tri) + [tri[0]]]
+        fig.add_trace(go.Scatter(x=pts[:, 0], y=pts[:, 1],
+                                 mode='lines', line=dict(color='steelblue', width=0.5),
+                                 showlegend=False))
+    fig.update_layout(yaxis_scaleanchor="x", title=title,
+                      height=350, margin=dict(l=0, r=0, t=30, b=0))
+    return fig

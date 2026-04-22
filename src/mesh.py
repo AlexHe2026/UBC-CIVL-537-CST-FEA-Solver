@@ -32,6 +32,47 @@ def generate_rect_mesh(L, h, nx, ny):
         - 'fixed': list of node indices on the x=0 boundary (cantilever root)
         - 'loaded': list of node indices on the x=L boundary (cantilever tip)
     """
+
+    #count number of nodes
+    nx_nodes = nx + 1
+    ny_nodes = ny + 1
+    n_nodes = nx_nodes * ny_nodes
+
+    #Measure elememnt length
+    dx = L / nx
+    dy = h / ny
+
+    # Generate nodes starting from bottom left corner and shift the nodes down by h/2
+    nodes = []
+    for j_y in range(ny_nodes):
+        for i_x in range(nx_nodes):
+            x_coord = i_x * dx
+            y_coord = (j_y * dy) - (h / 2)
+            nodes.append((x_coord, y_coord))
+    nodes = np.array(nodes)
+
+    elements = []
+    for row in range(ny_nodes - 1):
+        for col in range(nx_nodes - 1):
+            i = nx_nodes * row + col     # Bottom-Left
+            j = i + 1                    # Bottom-Right = Bottom left +1
+            k = i + nx_nodes             # Top-Left add one entire row node number
+            l = k + 1                    # Top-Right = Top left + 1
+
+            # Use += to cleanly unpack and append both CCW triangles at once
+            # T1: Bottom-Left -> Bottom-Right -> Top-Left
+            # T2: Top-Right -> Top-Left -> Bottom-Right
+            elements += [[i, j, k], [l, k, j]]
+            
+    elements = np.array(elements)
+
+    # Use modulo math to reliably find the left and right edges
+    boundary_tags = {
+        "fixed" : [n for n in range(n_nodes) if n % nx_nodes == 0],
+        "loaded" : [n for n in range(n_nodes) if n % nx_nodes == nx_nodes - 1]
+    }
+
+    return nodes, elements, boundary_tags
     raise NotImplementedError
 
 

@@ -21,8 +21,6 @@ with st.sidebar:
     ny = st.slider("Elements in y", 2, 16, 4)
     solve = st.button("Solve", type="primary")
     
-st.info("Configure inputs in the sidebar and click Solve.")
-
 # ──────────────────────────────────────────────
 # Tabs
 # ──────────────────────────────────────────────

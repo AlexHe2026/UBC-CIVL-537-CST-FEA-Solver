@@ -30,6 +30,13 @@ with st.sidebar:
     nu = st.number_input("Poisson's Ratio ν", value=0.25, min_value=0.0, max_value=0.4999,
                          format="%.4f")
     t = st.number_input("Thickness (m)", value=0.01, format="%.4f")
+    L = st.number_input("Plate Length L (m)", value=1.0)
+    h = st.number_input("Plate Height h (m)", value=0.25)
+    P = st.number_input("Tip Load P (N)", value=6000.0)
+    nx = st.slider("Elements in x", 2, 32, 8)
+    ny = st.slider("Elements in y", 2, 16, 4)
+    solve = st.button("Solve", type="primary")
+    st.info("Configure inputs in the sidebar and click Solve.")
 
     if nu >= 0.499:
         st.warning("Near-incompressible — results may be unreliable with CST elements. "

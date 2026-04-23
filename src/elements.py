@@ -97,11 +97,16 @@ def compute_D(E, nu, mode="plane_stress"):
     """
 
     #Calculate Plane Stress per CIVL 537 Section 06 Pg. 14
-    D = (E/(1-nu**2))*np.array([
-        [1, nu, 0],
-        [nu, 1, 0],
-        [0, 0, (1-nu)/2]])
-    
+    if mode=="plane_stress":
+        D = (E/(1-nu**2))*np.array([
+            [1, nu, 0],
+            [nu, 1, 0],
+            [0, 0, (1-nu)/2]])
+    elif mode=="plane_strain":
+        D = (E*(1-nu)/((1+nu)*(1-2*nu)))*np.array([
+            [1, nu/(1-nu), 0],
+            [nu/(1-nu), 1, 0],
+            [0, 0, (1-2*nu)/(2*(1-nu))]])
     return D
 
 

@@ -11,3 +11,5 @@ services:
                             # Streamlit detects the change and reloads the app automatically.
     environment:
       - PYTHONUNBUFFERED=1  # Force Python to print output immediately (useful for debugging)
+
+#docker compose run fea-solver python -m pytest tests/test_elements.py -v

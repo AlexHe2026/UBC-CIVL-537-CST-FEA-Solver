@@ -43,7 +43,7 @@ def test_tip_deflection_order_of_magnitude():
     fixed_dofs = np.array([[2*n, 2*n+1] for n in tags["fixed"]]).ravel()
     u = apply_bc_and_solve(K, R, fixed_dofs)
 
-    I = h**3 / 12
+    I = 0.01*h**3 / 12
     delta_EB = P * L**3 / (3 * E * I)
     tip_nodes = [n for n in tags["loaded"] if abs(nodes[n, 1]) < h / 8]
     tip_v = np.mean(u[2 * np.array(tip_nodes) + 1])

@@ -63,7 +63,9 @@ def assemble_K(nodes, elements, D, thickness):
         
         # Scatter the element stiffness into the global matrix
         # np.ix_ creates an open meshgrid and then add the 6x6 matrix into the correct grid spots
-        K[np.ix_(global_dofs, global_dofs)] += k_e
+        for i in range(6):
+            for j in range(6):
+                K[global_dofs[i], global_dofs[j]] += k_e[i, j]
         
     # Convert to CSR format as requested for efficient equation solving later
     return K.tocsr()
@@ -213,3 +215,4 @@ def assemble_R_uniform_tension(nodes, loaded_nodes, sigma_inf, thickness):
         # horizontal Degrees of Freedom (2 * n)
         R[2 * nA] += F_node
         R[2 * nB] += F_node
+    return R

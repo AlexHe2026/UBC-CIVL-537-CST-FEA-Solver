@@ -14,3 +14,4 @@ services:
 
 #docker compose run fea-solver python -m pytest tests/test_elements.py -v
 #docker compose run fea-solver python -m pytest tests/test_assembly.py -v
+#docker compose run fea-solver python -m pytest tests/test_solver.py -v

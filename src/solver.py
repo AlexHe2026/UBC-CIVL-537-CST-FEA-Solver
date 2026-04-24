@@ -31,4 +31,20 @@ def apply_bc_and_solve(K, R, fixed_dofs):
         - Symmetry on y=0: fix v-DOFs of nodes on y=0
         - Symmetry on x=0: fix u-DOFs of nodes on x=0
     """
-    raise NotImplementedError
+
+    n_dof = K.shape[0]
+    
+    all_dofs = np.arange(n_dof)
+    free_dofs = np.setdiff1d(all_dofs, fixed_dofs)
+    
+    # BULLETPROOF UPDATE: Standard 2-step CSR slicing
+    # Extracts the specific rows first, then extracts the columns
+    K_ff = K[free_dofs, :][:, free_dofs]
+    R_f = R[free_dofs]
+    
+    u_f = spsolve(K_ff, R_f)
+    
+    u = np.zeros(n_dof)
+    u[free_dofs] = u_f
+    
+    return u

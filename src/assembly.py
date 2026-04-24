@@ -182,4 +182,34 @@ def assemble_R_uniform_tension(nodes, loaded_nodes, sigma_inf, thickness):
     -------
     R : ndarray, shape (n_dof,)
     """
-    raise NotImplementedError
+    n_dof = 2 * len(nodes)
+    R = np.zeros(n_dof)
+    
+    # 1. Sort the loaded nodes by their Y-coordinate
+    # This ensures we process the boundary edge as contiguous physical segments
+    loaded_nodes = sorted(loaded_nodes, key=lambda n: nodes[n, 1])
+    
+    # 2. Loop over each segment connecting two adjacent loaded nodes
+    for i in range(len(loaded_nodes) - 1):
+        nA = loaded_nodes[i]
+        nB = loaded_nodes[i + 1]
+        
+        yA = nodes[nA, 1]
+        yB = nodes[nB, 1]
+        
+        # Calculate the length of this specific edge segment
+        Le = abs(yB - yA)
+        
+        # Calculate the total force acting on this single segment
+        # Force = Stress * Area = sigma_inf * (Length * thickness)
+        F_total = sigma_inf * Le * thickness
+        
+        # For a uniform load on a linear element, the consistent nodal forces 
+        # dictate that the total force is distributed equally to the two nodes
+        F_node = F_total / 2.0
+        
+        # 3. Scatter into the global load vector R
+        # Since this is tension in the X-direction (t_x), we add it to the 
+        # horizontal Degrees of Freedom (2 * n)
+        R[2 * nA] += F_node
+        R[2 * nB] += F_node

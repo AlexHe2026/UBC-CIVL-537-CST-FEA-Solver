@@ -128,40 +128,80 @@ def generate_plate_with_hole_mesh(W, H, R, n_radial, n_angular):
     pre-generated mesh from data/plate_with_hole_mesh.npz. This lets you
     proceed with the rest of the project while you work on your own mesher.
     """
-    raise NotImplementedError
-
-
-def load_fallback_hole_mesh(filepath=None):
-    """
-    Load the pre-generated plate-with-hole mesh from the .npz file.
-
-    Parameters
-    ----------
-    filepath : str, optional
-        Path to the .npz file. Defaults to data/plate_with_hole_mesh.npz
-        relative to the project root.
-
-    Returns
-    -------
-    nodes : ndarray, shape (n_nodes, 2)
-    elements : ndarray, shape (n_elems, 3)
-    boundary_tags : dict with keys 'hole', 'right', 'sym_x', 'sym_y'
-
-    Notes
-    -----
-    This is a fallback so you can work on the solver and validation plots
-    without being blocked by mesh generation. Your final submission should
-    include your own mesh generator (Option A or B above).
-    """
-    if filepath is None:
-        filepath = os.path.join(os.path.dirname(__file__), '..', 'data', 'plate_with_hole_mesh.npz')
-    data = np.load(filepath)
-    nodes = data['nodes']
-    elements = data['elements']
+    # Total number of nodes in each direction is the number of divisions + 1
+    N_r = n_radial + 1
+    N_theta = n_angular + 1
+    
+    nodes = []
+    
+    # 1. Generate angles from 0 to pi/2 (90 degrees)
+    theta_vals = np.linspace(0, np.pi / 2, N_theta)
+    
+    # Calculate the critical angle where the ray hits the top-right corner
+    theta_corner = np.arctan2(H, W)
+    
+    # 2. Generate Nodes mapping from (r, theta) to Cartesian (x, y)
+    for th in theta_vals:
+        if th <= theta_corner:
+            r_max = W / np.cos(th)  # Ray hits the right edge (x = W)
+        else:
+            r_max = H / np.sin(th)  # Ray hits the top edge (y = H)
+            
+        r_vals = np.linspace(R, r_max, N_r)
+        
+        for r in r_vals:
+            x = r * np.cos(th)
+            y = r * np.sin(th)
+            nodes.append([x, y])
+            
+    nodes = np.array(nodes)
+    
+    # 3. Generate Elements (Triangles)
+    elements = []
+    for j in range(n_angular):
+        for i in range(n_radial):
+            # 1D node IDs for the 4 corners of the current quadrilateral
+            n1 = i + j * N_r
+            n2 = (i + 1) + j * N_r
+            n3 = (i + 1) + (j + 1) * N_r
+            n4 = i + (j + 1) * N_r
+            
+            # Split the quad into two triangles
+            elements.append([n1, n2, n3])
+            elements.append([n1, n3, n4])
+            
+    elements = np.array(elements)
+    
+    # 4. Generate Boundary Tags
     boundary_tags = {
-        'hole': data['hole'].tolist(),
-        'right': data['right'].tolist(),
-        'sym_x': data['sym_x'].tolist(),
-        'sym_y': data['sym_y'].tolist(),
+        'hole': [],
+        'right': [],
+        'sym_x': [],
+        'sym_y': []
     }
+    
+    # Loop over the logical grid to tag the nodes easily
+    for j in range(N_theta):
+        for i in range(N_r):
+            node_id = i + j * N_r
+            x, y = nodes[node_id]
+            
+            # i=0 is the inner radius (hole)
+            if i == 0:
+                boundary_tags['hole'].append(node_id)
+            
+            # j=0 is the bottom edge (theta = 0)
+            if j == 0:
+                boundary_tags['sym_x'].append(node_id)
+                
+            # j=n_angular is the left edge (theta = pi/2)
+            if j == n_angular:
+                boundary_tags['sym_y'].append(node_id)
+                
+            # i=n_radial is the outer edge, but we specifically only want 
+            # the nodes that hit the right-hand wall (x = W). 
+            # We use np.isclose to avoid floating point rounding errors.
+            if i == n_radial and np.isclose(x, W):
+                boundary_tags['right'].append(node_id)
+                
     return nodes, elements, boundary_tags
